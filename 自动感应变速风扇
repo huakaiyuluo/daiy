@@ -1,0 +1,64 @@
+#define  sensorPin  6
+#include <Microduino_Motor.h>
+#include "I2Cdev.h"
+#include <Wire.h>
+#include <SHT2x.h>
+#if defined(__AVR_ATmega32U4__) || (__AVR_ATmega1284P__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega128RFA1__)
+#define motor_pin0A 8  //PWM
+#define motor_pin0B 6
+#define motor_pin1A 7  //PWM 
+#define motor_pin1B 5
+#else
+#define motor_pin0A 6  //PWM
+#define motor_pin0B 8
+#define motor_pin1A 5  //PWM
+#define motor_pin1B 7
+#endif
+
+
+#define temp1    25
+float sensor_tem;
+
+Motor MotorLeft(motor_pin0A, motor_pin0B);
+Motor MotorRight(motor_pin1A, motor_pin1B);
+ 
+#define MAX_THROTTLE 255 //最大油门 100~255
+#define MAX_STEERING 200 //最大转向 100~512
+ 
+int16_t leftVal = 0;  //左边电机旋转速度
+int16_t rightVal = 0;  //右边电机旋转速度
+
+int state;
+
+void setup()
+{ 
+  pinMode(sensorPin, INPUT);
+  Serial.begin(9600);
+  Serial.println("Microduino!");
+  MotorLeft.Fix(1);
+  MotorRight.Fix(1);
+ 
+   delay(200);
+}
+void loop()
+{ 
+  state = digitalRead(sensorPin);
+  sensor_tem = SHT2x.GetTemperature() ;
+  Serial.print("tem is");
+  Serial.println(sensor_tem);
+  delay(1000);
+  if (state == 1)
+  { Serial.println("there is someone");
+    if (sensor_tem <= temp1)
+    {Serial.println("SPEED is 100");leftVal=100;rightVal=100;
+     MotorLeft.Driver(leftVal);  //驱动电机
+     MotorRight.Driver(rightVal);
+    }
+     else
+     {Serial.println("SPEED is 150");leftVal=150;rightVal=150;
+       MotorLeft.Driver(leftVal);  //驱动电机
+       MotorRight.Driver(rightVal);
+       }
+   }
+
+}
